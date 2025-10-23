@@ -48,9 +48,9 @@ declare global {
 const STORAGE_KEY = "minimal-chat:transcript";
 
 const DEFAULT_CONFIG: ChatConfig = {
-  apiBaseUrl: "https://api.openai.com",
+  apiBaseUrl: "http://localhost:11434",
   apiPath: "/v1/chat/completions",
-  model: "gpt-3.5-turbo",
+  model: "gemma3:4b",
 };
 
 const config: ChatConfig = {
@@ -70,6 +70,7 @@ const elements = {
   textarea: document.querySelector<HTMLTextAreaElement>("#composer-textarea"),
   sendButton: document.querySelector<HTMLButtonElement>("#send-btn"),
   statusPill: document.querySelector<HTMLSpanElement>("#status-pill"),
+  statusText: document.querySelector<HTMLSpanElement>("#status-text"),
   cancelButton: document.querySelector<HTMLButtonElement>("#cancel-request-btn"),
   newChatButton: document.querySelector<HTMLButtonElement>("#new-chat-btn"),
   exportButton: document.querySelector<HTMLButtonElement>("#export-chat-btn"),
@@ -91,6 +92,7 @@ function resolveElements(source: ElementRefs): ResolvedElements {
   if (!source.textarea) throw new Error("Missing DOM element: textarea");
   if (!source.sendButton) throw new Error("Missing DOM element: sendButton");
   if (!source.statusPill) throw new Error("Missing DOM element: statusPill");
+  if (!source.statusText) throw new Error("Missing DOM element: statusText");
   if (!source.cancelButton) throw new Error("Missing DOM element: cancelButton");
   if (!source.newChatButton) throw new Error("Missing DOM element: newChatButton");
   if (!source.exportButton) throw new Error("Missing DOM element: exportButton");
@@ -127,9 +129,13 @@ function setComposerDisabled(disabled: boolean) {
   ui.cancelButton.disabled = !disabled;
 }
 
-function setStatus(text: string, variant: "default" | "error" = "default") {
-  ui.statusPill.textContent = text;
-  ui.statusPill.classList.toggle("error", variant === "error");
+type StatusVariant = "default" | "pending" | "error";
+
+function setStatus(text: string, variant: StatusVariant = "default") {
+  ui.statusText.textContent = text;
+  ui.statusPill.dataset.state = variant;
+  ui.statusPill.setAttribute("title", text);
+  ui.statusPill.setAttribute("aria-label", text);
 }
 
 function updateActionStates() {
@@ -255,7 +261,7 @@ async function sendToModel(placeholder: Message): Promise<void> {
   const messagesForRequest = state.messages.filter((message) => message.id !== placeholder.id);
 
   setComposerDisabled(true);
-  setStatus("Thinking…");
+  setStatus("Thinking…", "pending");
   state.isSending = true;
 
   const controller = new AbortController();

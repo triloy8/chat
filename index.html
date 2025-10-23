@@ -264,42 +264,157 @@
         outline-offset: 2px;
       }
 
-      .composer-actions {
+      .composer-main {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        border-top: 1px solid var(--surface-muted);
-        padding-top: 12px;
+        align-items: stretch;
+        gap: 14px;
       }
 
-      .composer-actions .left-group {
-        display: flex;
-        align-items: center;
-        gap: 16px;
+      .composer-field {
         flex: 1;
+        display: flex;
+        flex-direction: column;
         min-width: 0;
       }
 
-      .composer-actions .right-group {
+      .composer-controls {
         display: flex;
-        gap: 12px;
         align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
       }
-*** End Patch
 
       .status-pill {
-        font-size: 0.875rem;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(82, 82, 91, 0.24);
-        color: var(--success-text);
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(63, 63, 70, 0.55);
+        background: rgba(32, 32, 36, 0.85);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        pointer-events: none;
+        color: #a1a1aa;
+        box-shadow: inset 0 0 0 1px rgba(63, 63, 70, 0.3);
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
       }
 
-      .status-pill.error {
-        background: rgba(239, 68, 68, 0.18);
-        color: var(--error-text);
+      .status-pill[data-state="pending"] {
+        color: #60a5fa;
+        border-color: rgba(96, 165, 250, 0.55);
+        box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.25);
+      }
+
+      .status-pill[data-state="error"] {
+        color: #f87171;
+        background: rgba(127, 29, 29, 0.3);
+        border-color: rgba(248, 113, 113, 0.6);
+        box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.35);
+      }
+
+      .status-icon {
+        width: 22px;
+        height: 22px;
+        display: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .status-icon circle {
+        stroke-width: 2;
+      }
+
+      .status-pill[data-state="default"] .icon-ready {
+        display: block;
+      }
+
+      .status-pill[data-state="pending"] .icon-pending {
+        display: block;
+      }
+
+      .status-pill[data-state="error"] .icon-error {
+        display: block;
+      }
+
+      .icon-pending .indicator {
+        transform-origin: center;
+        animation: spin 1s linear infinite;
+      }
+
+      .composer-controls .icon-button {
+        flex-shrink: 0;
+      }
+
+      .icon-button {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(63, 63, 70, 0.5);
+        background: rgba(32, 32, 36, 0.85);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #a1a1aa;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      }
+
+      .icon-button svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        fill: none;
+      }
+
+      .icon-button.primary {
+        background: rgba(32, 32, 36, 0.85);
+        border-color: rgba(63, 63, 70, 0.55);
+        color: #a1a1aa;
+      }
+
+      .icon-button.primary:not(:disabled):hover,
+      .icon-button.primary:not(:disabled):focus-visible {
+        background: #2563eb;
+        border-color: rgba(37, 99, 235, 0.75);
+        color: #f8fafc;
+      }
+
+      .icon-button.ghost {
+        background: rgba(32, 32, 36, 0.7);
+        border-color: rgba(63, 63, 70, 0.45);
+      }
+
+      .icon-button:not(:disabled):hover {
+        border-color: rgba(148, 163, 184, 0.45);
+        background: rgba(52, 52, 58, 0.9);
+        color: #e5e7eb;
+      }
+
+      .icon-button:focus-visible {
+        outline: 2px solid rgba(37, 99, 235, 0.65);
+        outline-offset: 2px;
+      }
+
+      .icon-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .icon-button[hidden] {
+        display: none;
+      }
+
+      .icon-cancel path {
+        stroke-linecap: round;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       dialog {
@@ -348,21 +463,68 @@
       <section class="chat-body" id="message-list" aria-live="polite"></section>
       <section class="chat-composer">
         <form id="composer-form">
-          <label for="composer-textarea" class="visually-hidden">Message</label>
-          <textarea
-            id="composer-textarea"
-            name="message"
-            placeholder="Type your message..."
-            autocomplete="off"
-            required
-          ></textarea>
-          <div class="composer-actions">
-            <div class="left-group">
-              <span class="status-pill" id="status-pill" role="status">Ready</span>
+          <div class="composer-main">
+            <span
+              class="status-pill"
+              id="status-pill"
+              role="status"
+              aria-live="polite"
+              data-state="default"
+              title="Ready"
+              aria-label="Ready"
+            >
+              <span class="visually-hidden" id="status-text">Ready</span>
+              <svg class="status-icon icon-ready" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6.5 12.75l3.25 3.25L17.5 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <svg class="status-icon icon-pending" viewBox="0 0 24 24" aria-hidden="true">
+                <circle class="track" cx="12" cy="12" r="7.5" stroke="currentColor" opacity="0.2" />
+                <path class="indicator" d="M12 4.5a7.5 7.5 0 0 1 7.5 7.5" stroke="currentColor" stroke-linecap="round" />
+              </svg>
+              <svg class="status-icon icon-error" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="7" stroke="currentColor" stroke-linecap="round" />
+                <path d="M12 8.5v4" stroke="currentColor" stroke-linecap="round" />
+                <circle cx="12" cy="16" r="0.8" fill="currentColor" stroke="none" />
+              </svg>
+            </span>
+            <div class="composer-field">
+              <label for="composer-textarea" class="visually-hidden">Message</label>
+              <textarea
+                id="composer-textarea"
+                name="message"
+                placeholder="Type your message..."
+                autocomplete="off"
+                required
+              ></textarea>
             </div>
-            <div class="right-group">
-              <button type="button" id="cancel-request-btn" hidden>Cancel</button>
-              <button class="primary" type="submit" id="send-btn">Send</button>
+            <div class="composer-controls">
+              <button
+                type="button"
+                class="icon-button ghost"
+                id="cancel-request-btn"
+                hidden
+                aria-label="Cancel request"
+                title="Cancel request"
+              >
+                <svg class="icon icon-cancel" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 8l8 8" stroke="currentColor" />
+                  <path d="M16 8l-8 8" stroke="currentColor" />
+                </svg>
+                <span class="visually-hidden">Cancel request</span>
+              </button>
+              <button
+                class="icon-button primary"
+                type="submit"
+                id="send-btn"
+                aria-label="Send message"
+                title="Send message"
+              >
+                <svg class="icon icon-send" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4.5 3.75l15 8.25-15 8.25 3-8.25-3-8.25z" stroke="currentColor" fill="none" stroke-linejoin="round" />
+                  <path d="M7.5 11.75l12-.75" stroke="currentColor" stroke-linecap="round" />
+                </svg>
+                <span class="visually-hidden">Send</span>
+              </button>
             </div>
           </div>
         </form>
