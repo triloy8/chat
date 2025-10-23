@@ -521,10 +521,14 @@ function attachEventListeners() {
   });
 
   ui.textarea.addEventListener("keydown", (event: KeyboardEvent) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-      event.preventDefault();
-      ui.composerForm.requestSubmit();
+    if (event.key !== "Enter") return;
+
+    if (event.shiftKey) {
+      return;
     }
+
+    event.preventDefault();
+    ui.composerForm.requestSubmit();
   });
 }
 
