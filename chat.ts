@@ -127,7 +127,7 @@ function createMessage(role: ChatRole, content: string): Message {
 
 function setComposerDisabled(disabled: boolean) {
   ui.textarea.disabled = disabled;
-  ui.sendButton.disabled = disabled;
+  ui.sendButton.hidden = disabled;
   ui.cancelButton.hidden = !disabled;
   ui.cancelButton.disabled = !disabled;
 }

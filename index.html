@@ -15,6 +15,7 @@
         --surface-accent: rgba(82, 82, 91, 0.45);
         --surface-accent-strong: rgba(107, 114, 128, 0.8);
         --surface-muted: rgba(63, 63, 70, 0.35);
+        --composer-control-min-height: 96px;
         --text-primary: #e5e7eb;
         --text-secondary: rgba(209, 213, 219, 0.7);
         --border-soft: rgba(63, 63, 70, 0.6);
@@ -259,6 +260,11 @@
         box-shadow: inset 0 0 0 1px rgba(63, 63, 70, 0.45);
         padding-inline: 16px;
         overflow-y: hidden;
+        scrollbar-width: none;
+      }
+
+      textarea::-webkit-scrollbar {
+        display: none;
       }
 
       textarea:focus-visible {
@@ -270,6 +276,7 @@
         display: flex;
         align-items: stretch;
         gap: 14px;
+        min-height: var(--composer-control-min-height);
       }
 
       .composer-field {
@@ -281,18 +288,29 @@
 
       .composer-controls {
         display: flex;
-        align-items: center;
-        gap: 10px;
+        align-items: stretch;
+        justify-content: flex-end;
         flex-shrink: 0;
       }
 
+      .composer-action-stack {
+        position: relative;
+        width: 56px;
+        height: 100%;
+        min-height: var(--composer-control-min-height);
+      }
+
       .status-pill {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
+        flex: 0 0 56px;
+        width: 56px;
+        min-width: 56px;
+        align-self: stretch;
+        height: auto;
+        min-height: var(--composer-control-min-height);
+        border-radius: 18px;
         border: 1px solid rgba(63, 63, 70, 0.55);
         background: rgba(32, 32, 36, 0.85);
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
@@ -350,9 +368,9 @@
       }
 
       .icon-button {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
+        width: 100%;
+        height: 100%;
+        border-radius: 18px;
         border: 1px solid rgba(63, 63, 70, 0.5);
         background: rgba(32, 32, 36, 0.85);
         display: inline-flex;
@@ -360,6 +378,12 @@
         justify-content: center;
         color: #a1a1aa;
         transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        position: relative;
+      }
+
+      .composer-action-stack .icon-button {
+        position: absolute;
+        inset: 0;
       }
 
       .icon-button svg {
@@ -500,33 +524,35 @@
               ></textarea>
             </div>
             <div class="composer-controls">
-              <button
-                type="button"
-                class="icon-button ghost"
-                id="cancel-request-btn"
-                hidden
-                aria-label="Cancel request"
-                title="Cancel request"
-              >
-                <svg class="icon icon-cancel" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M8 8l8 8" stroke="currentColor" />
-                  <path d="M16 8l-8 8" stroke="currentColor" />
-                </svg>
-                <span class="visually-hidden">Cancel request</span>
-              </button>
-              <button
-                class="icon-button primary"
-                type="submit"
-                id="send-btn"
-                aria-label="Send message"
-                title="Send message"
-              >
-                <svg class="icon icon-send" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M4.5 3.75l15 8.25-15 8.25 3-8.25-3-8.25z" stroke="currentColor" fill="none" stroke-linejoin="round" />
-                  <path d="M7.5 11.75l12-.75" stroke="currentColor" stroke-linecap="round" />
-                </svg>
-                <span class="visually-hidden">Send</span>
-              </button>
+              <div class="composer-action-stack">
+                <button
+                  class="icon-button primary"
+                  type="submit"
+                  id="send-btn"
+                  aria-label="Send message"
+                  title="Send message"
+                >
+                  <svg class="icon icon-send" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4.5 3.75l15 8.25-15 8.25 3-8.25-3-8.25z" stroke="currentColor" fill="none" stroke-linejoin="round" />
+                    <path d="M7.5 11.75l12-.75" stroke="currentColor" stroke-linecap="round" />
+                  </svg>
+                  <span class="visually-hidden">Send</span>
+                </button>
+                <button
+                  type="button"
+                  class="icon-button ghost"
+                  id="cancel-request-btn"
+                  hidden
+                  aria-label="Cancel request"
+                  title="Cancel request"
+                >
+                  <svg class="icon icon-cancel" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 8l8 8" stroke="currentColor" />
+                    <path d="M16 8l-8 8" stroke="currentColor" />
+                  </svg>
+                  <span class="visually-hidden">Cancel request</span>
+                </button>
+              </div>
             </div>
           </div>
         </form>
