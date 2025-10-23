@@ -64,6 +64,9 @@ const state: ChatState = {
   isSending: false,
 };
 
+const TEXTAREA_MIN_HEIGHT = 96;
+const TEXTAREA_MAX_HEIGHT = 192;
+
 const elements = {
   messageList: document.querySelector<HTMLElement>("#message-list"),
   composerForm: document.querySelector<HTMLFormElement>("#composer-form"),
@@ -136,6 +139,19 @@ function setStatus(text: string, variant: StatusVariant = "default") {
   ui.statusPill.dataset.state = variant;
   ui.statusPill.setAttribute("title", text);
   ui.statusPill.setAttribute("aria-label", text);
+}
+
+function adjustTextareaHeight() {
+  const textarea = ui.textarea;
+  textarea.style.height = "auto";
+  const next = Math.min(textarea.scrollHeight, TEXTAREA_MAX_HEIGHT);
+  textarea.style.height = `${Math.max(next, TEXTAREA_MIN_HEIGHT)}px`;
+  textarea.style.overflowY = next >= TEXTAREA_MAX_HEIGHT ? "auto" : "hidden";
+}
+
+function resetTextareaHeight() {
+  ui.textarea.style.height = `${TEXTAREA_MIN_HEIGHT}px`;
+  ui.textarea.style.overflowY = "hidden";
 }
 
 function updateActionStates() {
@@ -243,6 +259,7 @@ async function handleSubmit(event: SubmitEvent) {
 
   const userMessage = createMessage("user", text);
   ui.textarea.value = "";
+  resetTextareaHeight();
   addMessage(userMessage);
 
   const assistantPlaceholder: Message = {
@@ -485,6 +502,7 @@ function resetChat() {
   sessionStorage.removeItem(STORAGE_KEY);
   renderMessages();
   setStatus("Ready");
+  resetTextareaHeight();
 }
 
 function attachEventListeners() {
@@ -496,6 +514,10 @@ function attachEventListeners() {
 
   ui.exportButton.addEventListener("click", () => {
     void handleExportClick();
+  });
+
+  ui.textarea.addEventListener("input", () => {
+    adjustTextareaHeight();
   });
 
   ui.textarea.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -510,6 +532,7 @@ function setup() {
   renderMessages();
   attachEventListeners();
   void offerTranscriptRestore();
+  resetTextareaHeight();
   ui.textarea.focus();
 }
 
