@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        --surface-base: #111827;
+        --surface-elevated: #1f2937;
+        --surface-accent: #1d4ed8;
+        --surface-accent-strong: #2563eb;
+        --surface-muted: rgba(148, 163, 184, 0.2);
+        --text-primary: #e2e8f0;
+        --text-secondary: rgba(226, 232, 240, 0.7);
+        --border-soft: rgba(148, 163, 184, 0.18);
+        --shadow-strong: 0 16px 48px rgba(15, 23, 42, 0.45);
+        --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.35);
+        --badge-pending-bg: rgba(59, 130, 246, 0.24);
+        --badge-error-bg: rgba(248, 113, 113, 0.18);
+        --error-text: #f87171;
+        --success-text: #93c5fd;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        background: radial-gradient(circle at top, rgba(30, 64, 175, 0.24), transparent 55%),
+          radial-gradient(circle at bottom, rgba(13, 148, 136, 0.14), transparent 45%),
+          #0f172a;
+      }
+
+      .chat-app {
+        width: min(960px, 100vw);
+        margin: 16px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 16px;
+        background: var(--surface-base);
+        box-shadow: var(--shadow-strong);
+        overflow: hidden;
+      }
+
+      .chat-header {
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border-soft);
+        position: sticky;
+        top: 0;
+        backdrop-filter: blur(8px);
+        background: rgba(17, 24, 39, 0.85);
+        z-index: 1;
+      }
+
+      .chat-header h1 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .chat-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        font: inherit;
+        border-radius: 999px;
+        border: 1px solid var(--border-soft);
+        padding: 8px 16px;
+        background: rgba(15, 23, 42, 0.6);
+        color: var(--text-primary);
+        transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      button.primary {
+        background: var(--surface-accent-strong);
+        border-color: var(--surface-accent);
+        color: #f8fafc;
+      }
+
+      button.primary:hover:not(:disabled) {
+        background: var(--surface-accent);
+      }
+
+      button:hover:not(:disabled) {
+        border-color: rgba(59, 130, 246, 0.45);
+        background: rgba(30, 64, 175, 0.35);
+      }
+
+      .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        color: var(--text-primary);
+      }
+
+      .empty-state {
+        margin: auto;
+        text-align: center;
+        max-width: 320px;
+        color: var(--text-secondary);
+      }
+
+      .message {
+        padding: 16px 20px;
+        border-radius: 12px;
+        max-width: 75%;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-shadow: var(--shadow-soft);
+        background: var(--surface-elevated);
+        color: var(--text-primary);
+      }
+
+      .message[data-role="user"] {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        color: #f8fafc;
+      }
+
+      .message[data-role="assistant"] {
+        align-self: flex-start;
+      }
+
+      .message[data-role="system"] {
+        align-self: center;
+        font-style: italic;
+        background: rgba(59, 130, 246, 0.14);
+        color: var(--text-primary);
+      }
+
+      .message[data-status="pending"] {
+        opacity: 0.85;
+      }
+
+      .message[data-status="error"] {
+        background: rgba(127, 29, 29, 0.35);
+        color: var(--error-text);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+      }
+
+      .message-role {
+        font-weight: 600;
+        font-size: 0.875rem;
+        opacity: 0.7;
+        margin: 0;
+      }
+
+      .message-body {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .message-meta {
+        display: flex;
+        align-items: center;
+      }
+
+      .message-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: var(--text-primary);
+      }
+
+      .message-badge.pending {
+        background: var(--badge-pending-bg);
+        color: var(--success-text);
+      }
+
+      .message-badge.error {
+        background: var(--badge-error-bg);
+        color: var(--error-text);
+      }
+
+      .chat-composer {
+        padding: 20px 24px;
+        border-top: 1px solid var(--border-soft);
+        background: rgba(15, 23, 42, 0.85);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: sticky;
+        bottom: 0;
+        backdrop-filter: blur(6px);
+      }
+
+      textarea {
+        font: inherit;
+        resize: vertical;
+        min-height: 80px;
+        max-height: 200px;
+        border-radius: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--border-soft);
+        background: rgba(17, 24, 39, 0.75);
+        color: var(--text-primary);
+        caret-color: var(--surface-accent-strong);
+      }
+
+      textarea:focus-visible {
+        outline: 2px solid rgba(59, 130, 246, 0.5);
+        outline-offset: 2px;
+      }
+
+      .composer-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .status-pill {
+        font-size: 0.875rem;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.16);
+        color: var(--success-text);
+      }
+
+      .status-pill.error {
+        background: rgba(239, 68, 68, 0.18);
+        color: var(--error-text);
+      }
+
+      dialog {
+        border: none;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 360px;
+        box-shadow: var(--shadow-strong);
+        background: rgba(17, 24, 39, 0.92);
+        color: var(--text-primary);
+      }
+
+      dialog::backdrop {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(4px);
+      }
+
+      .confirm-footer {
+        margin-top: 24px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      @media (max-width: 720px) {
+        .chat-app {
+          margin: 0;
+          border-radius: 0;
+        }
+
+        .message {
+          max-width: 90%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="chat-app" data-role="chat-app">
+      <header class="chat-header">
+        <h1>Chat</h1>
+        <div class="chat-actions">
+          <button type="button" id="export-chat-btn">Export Chat</button>
+          <button type="button" id="new-chat-btn">New Chat</button>
+        </div>
+      </header>
+      <section class="chat-body" id="message-list" aria-live="polite"></section>
+      <section class="chat-composer">
+        <form id="composer-form">
+          <label for="composer-textarea" class="visually-hidden">Message</label>
+          <textarea
+            id="composer-textarea"
+            name="message"
+            placeholder="Type your message..."
+            autocomplete="off"
+            required
+          ></textarea>
+          <div class="composer-actions">
+            <span class="status-pill" id="status-pill" role="status">Ready</span>
+            <div>
+              <button type="button" id="cancel-request-btn" hidden>Cancel</button>
+              <button class="primary" type="submit" id="send-btn">Send</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <dialog id="confirm-dialog" aria-modal="true">
+      <h2 id="confirm-title">Start a new chat?</h2>
+      <p id="confirm-description">
+        This will clear the current conversation. You can export the transcript first if you still need it.
+      </p>
+      <div class="confirm-footer">
+        <button type="button" id="confirm-cancel-btn">Cancel</button>
+        <button type="button" class="primary" id="confirm-ok-btn">Confirm</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="./dist/chat.js"></script>
+  </body>
+</html>
