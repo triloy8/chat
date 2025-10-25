@@ -35,3 +35,4 @@ Override any default by attaching a config object before `chat.js` loads:
 ## Roadmap
 - [ ] OpenAI API models fetch endpoint compatibility.
 - [ ] Markdown formatting compatibility.
+- [ ] Configurable system prompt support.
