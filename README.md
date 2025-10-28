@@ -25,6 +25,7 @@ Override any default by attaching a config object before `chat.js` loads:
     apiBaseUrl: "http://localhost:11434",
     apiPath: "/v1/chat/completions",
     model: "gemma3:4b",
+    systemPrompt: "You are a concise research assistant.",
     apiKey: "optional bearer token",
     headers: { "X-Custom": "value" }
   };
@@ -32,7 +33,9 @@ Override any default by attaching a config object before `chat.js` loads:
 <script src="dist/chat.js" defer></script>
 ```
 
+Define `systemPrompt` to prepend a fixed system message to every conversation. Omit or leave it blank to keep the default model behavior.
+
 ## Roadmap
 - [ ] OpenAI API models fetch endpoint compatibility.
 - [ ] Markdown formatting compatibility.
-- [ ] Configurable system prompt support.
+- [x] Configurable system prompt support.

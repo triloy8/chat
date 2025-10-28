@@ -23,6 +23,7 @@ interface ChatConfig {
   apiKey?: string;
   model: string;
   headers?: Record<string, string>;
+  systemPrompt?: string;
 }
 
 interface ChatState {
@@ -51,6 +52,7 @@ const DEFAULT_CONFIG: ChatConfig = {
   apiBaseUrl: "http://localhost:11434",
   apiPath: "/v1/chat/completions",
   model: "gemma3:4b",
+  systemPrompt: "The only word you know is orange. **YOU DO NOT RESPOND TO ANYTHING OTHER THAN WITH THE WORD ORANGE**",
 };
 
 const config: ChatConfig = {
@@ -351,9 +353,21 @@ async function sendChatCompletion(
   messages: Message[],
   signal: AbortSignal,
 ): Promise<string> {
+  const requestMessages: CompletionMessage[] = [];
+  const systemPrompt =
+    typeof config.systemPrompt === "string" ? config.systemPrompt.trim() : "";
+
+  if (systemPrompt) {
+    requestMessages.push({ role: "system", content: systemPrompt });
+  }
+
+  for (const { role, content } of messages) {
+    requestMessages.push({ role, content });
+  }
+
   const requestBody = {
     model: config.model,
-    messages: messages.map(({ role, content }) => ({ role, content })),
+    messages: requestMessages,
     conversation_id: state.conversationId,
   };
 
