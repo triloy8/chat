@@ -11,6 +11,15 @@
       <header class="chat-header">
         <h1>Chat</h1>
         <div class="chat-actions">
+          <button
+            type="button"
+            class="system-prompt-trigger"
+            id="system-prompt-btn"
+            aria-haspopup="dialog"
+            aria-controls="system-prompt-dialog"
+          >
+            System Prompt
+          </button>
           <button type="button" id="export-chat-btn">Export Chat</button>
           <button type="button" id="new-chat-btn">New Chat</button>
         </div>
@@ -96,6 +105,17 @@
       <div class="confirm-footer">
         <button type="button" id="confirm-cancel-btn">Cancel</button>
         <button type="button" class="primary" id="confirm-ok-btn">Confirm</button>
+      </div>
+    </dialog>
+    <dialog id="system-prompt-dialog" aria-modal="true" aria-labelledby="system-prompt-title">
+      <header class="system-prompt-dialog__header">
+        <h2 id="system-prompt-title">System Prompt</h2>
+      </header>
+      <div class="system-prompt-dialog__body">
+        <pre id="system-prompt-content"></pre>
+      </div>
+      <div class="system-prompt-dialog__footer">
+        <button type="button" id="system-prompt-close-btn-footer">Close</button>
       </div>
     </dialog>
 

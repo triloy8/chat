@@ -60,6 +60,11 @@ const config: ChatConfig = {
   ...(window.CHAT_CONFIG ?? {}),
 };
 
+function getSystemPrompt(): string {
+  const prompt = config.systemPrompt;
+  return typeof prompt === "string" ? prompt.trim() : "";
+}
+
 const state: ChatState = {
   conversationId: createConversationId(),
   messages: [],
@@ -84,6 +89,10 @@ const elements = {
   confirmCancelButton: document.querySelector<HTMLButtonElement>("#confirm-cancel-btn"),
   confirmTitle: document.querySelector<HTMLElement>("#confirm-title"),
   confirmDescription: document.querySelector<HTMLElement>("#confirm-description"),
+  systemPromptButton: document.querySelector<HTMLButtonElement>("#system-prompt-btn"),
+  systemPromptDialog: document.querySelector<HTMLDialogElement>("#system-prompt-dialog"),
+  systemPromptContent: document.querySelector<HTMLElement>("#system-prompt-content"),
+  systemPromptCloseFooterButton: document.querySelector<HTMLButtonElement>("#system-prompt-close-btn-footer"),
 };
 
 type ElementRefs = typeof elements;
@@ -106,6 +115,12 @@ function resolveElements(source: ElementRefs): ResolvedElements {
   if (!source.confirmCancelButton) throw new Error("Missing DOM element: confirmCancelButton");
   if (!source.confirmTitle) throw new Error("Missing DOM element: confirmTitle");
   if (!source.confirmDescription) throw new Error("Missing DOM element: confirmDescription");
+  if (!source.systemPromptButton) throw new Error("Missing DOM element: systemPromptButton");
+  if (!source.systemPromptDialog) throw new Error("Missing DOM element: systemPromptDialog");
+  if (!source.systemPromptContent) throw new Error("Missing DOM element: systemPromptContent");
+  if (!source.systemPromptCloseFooterButton) {
+    throw new Error("Missing DOM element: systemPromptCloseFooterButton");
+  }
   return source as ResolvedElements;
 }
 
@@ -158,6 +173,20 @@ function resetTextareaHeight() {
 
 function updateActionStates() {
   ui.exportButton.disabled = state.messages.length === 0;
+}
+
+function syncSystemPromptUI() {
+  const prompt = getSystemPrompt();
+  if (!prompt) {
+    ui.systemPromptButton.hidden = true;
+    if (ui.systemPromptDialog.open) {
+      ui.systemPromptDialog.close();
+    }
+    return;
+  }
+
+  ui.systemPromptButton.hidden = false;
+  ui.systemPromptContent.textContent = prompt;
 }
 
 function renderMessages() {
@@ -354,8 +383,7 @@ async function sendChatCompletion(
   signal: AbortSignal,
 ): Promise<string> {
   const requestMessages: CompletionMessage[] = [];
-  const systemPrompt =
-    typeof config.systemPrompt === "string" ? config.systemPrompt.trim() : "";
+  const systemPrompt = getSystemPrompt();
 
   if (systemPrompt) {
     requestMessages.push({ role: "system", content: systemPrompt });
@@ -544,9 +572,26 @@ function attachEventListeners() {
     event.preventDefault();
     ui.composerForm.requestSubmit();
   });
+
+  ui.systemPromptButton.addEventListener("click", () => {
+    const prompt = getSystemPrompt();
+    if (!prompt) return;
+    ui.systemPromptContent.textContent = prompt;
+    ui.systemPromptDialog.showModal();
+  });
+
+  const closePromptDialog = () => {
+    if (ui.systemPromptDialog.open) {
+      ui.systemPromptDialog.close();
+    }
+  };
+
+  ui.systemPromptCloseFooterButton.addEventListener("click", closePromptDialog);
+  ui.systemPromptDialog.addEventListener("cancel", closePromptDialog);
 }
 
 function setup() {
+  syncSystemPromptUI();
   renderMessages();
   attachEventListeners();
   void offerTranscriptRestore();

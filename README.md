@@ -33,7 +33,7 @@ Override any default by attaching a config object before `chat.js` loads:
 <script src="dist/chat.js" defer></script>
 ```
 
-Define `systemPrompt` to prepend a fixed system message to every conversation. Omit or leave it blank to keep the default model behavior.
+Define `systemPrompt` to prepend a fixed system message to every conversation. When present, a “System Prompt” pill appears in the header for quick reference. Omit or leave it blank to keep the default model behavior.
 
 ## Roadmap
 - [ ] OpenAI API models fetch endpoint compatibility.
