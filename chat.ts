@@ -513,10 +513,13 @@ async function handleExportClick() {
     return;
   }
 
+  const systemPrompt = getSystemPrompt();
+
   const payload = {
     conversationId: state.conversationId,
     exportedAt: new Date().toISOString(),
     messages: state.messages,
+    ...(systemPrompt ? { systemPrompt } : {}),
   };
 
   const blob = new Blob([JSON.stringify(payload, null, 2)], {
