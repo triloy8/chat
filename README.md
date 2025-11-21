@@ -16,6 +16,10 @@ A single-page chat client focused on a minimalist stack and interface. It talks 
 3. `npx serve .` to host the static files locally.
 4. Open `index.html` in a browser and set `window.CHAT_CONFIG` if you need a non-default endpoint.
 
+## Screenshots
+![Chat interface screenshot](screenshots/chat.png)
+![System prompt pill screenshot](screenshots/system_prompt.png)
+
 ## Configuration
 Override any default by attaching a config object before `chat.js` loads:
 
